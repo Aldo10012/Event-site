@@ -18,32 +18,47 @@ main = Blueprint('main', __name__)
 def index():
     """Show upcoming events to users!"""
     # TODO: Get all events and send to the template
-    return render_template('index.html')
+    events = Event.query.all()
+    return render_template('index.html', events=events)
 
 
 @main.route('/event/<event_id>', methods=['GET'])
 def event_detail(event_id):
     """Show a single event."""
     # TODO: Get the event with the given id and send to the template
-    return render_template('event_detail.html')
+    event = Event.query.get(event_id)
+    return render_template('event_detail.html', event=event)
 
 
 @main.route('/event/<event_id>', methods=['POST'])
 def rsvp(event_id):
     """RSVP to an event."""
     # TODO: Get the event with the given id from the database
+    event = Event.query.get(event_id)
     is_returning_guest = request.form.get('returning')
     guest_name = request.form.get('guest_name')
 
     if is_returning_guest:
         # TODO: Look up the guest by name, and add the event to their 
         # events_attending, then commit to the database
+        
+        guest = Guest.query.filter_by(name=guest_name)
+        guest.events_attending.append(event)
+        db.session.add(guest)
+        db.session.commit()
+
+
         pass
     else:
         guest_email = request.form.get('email')
         guest_phone = request.form.get('phone')
         # TODO: Create a new guest with the given name, email, and phone, and 
         # add the event to their events_attending, then commit to the database
+        guest = Guest(name=guest_name, email=guest_email, phone=guest_phone)
+        guest.events_attending.append(event)
+        db.session.add(guest)
+        db.session.commit()
+
         pass
     
     flash('You have successfully RSVP\'d! See you there!')
@@ -68,6 +83,9 @@ def create():
 
         # TODO: Create a new event with the given title, description, & 
         # datetime, then add and commit to the database
+        event = Event(title=new_event_title, description=new_event_description, date_and_time=date_and_time)
+        db.session.add(event)
+        db.session.commit()
 
         flash('Event created.')
         return redirect(url_for('main.index'))
@@ -78,4 +96,6 @@ def create():
 @main.route('/guest/<guest_id>')
 def guest_detail(guest_id):
     # TODO: Get the guest with the given id and send to the template
-    return render_template('guest_detail.html')
+    guest = Guest.query.filter_by(id=guest_id)
+    
+    return render_template('guest_detail.html', guest=guest)
