@@ -33,10 +33,6 @@ class Event(db.Model):
 
     guests = db.relationship('Guest', secondary='table', back_populates="events_attending")
 
-# TODO: Create a table `guest_event_table` with the following columns:
-# - event_id: Integer column (foreign key)
-# - guest_id: Integer column (foreign key)
-
 guest_event_table = db.Table( "table",
     db.Column('guest_id', db.Integer, db.ForeignKey('guest.id')),
     db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
